@@ -1,7 +1,7 @@
 import sys
 
 from lang.lexer.tokenizer import tokenize
-from lang.parser.compiler import compile
+from lang.parser.compiler import Compiler
 from exceptions import LanmoSyntaxError
 
 def read_program_file(args: list[str]) -> tuple[str, str]:
@@ -27,10 +27,11 @@ def main(args: list[str]) -> None:
         print("[ERROR] Required a .lm for running")
         sys.exit(1)
     tokens = tokenize(program)
-    byte_code_file = f"{path[:-3]}.lbc"
+    byte_code_file = f"{path[:-3]}.lmc"
     with open(byte_code_file, 'wb') as byte_code_file:
         try:
-            byte_code_file.write(compile(tokens))
+            compiler = Compiler(tokens)
+            byte_code_file.write(compiler.compile())
         except LanmoSyntaxError as e:
             print(f"file: {path}")
             if e.token is not None:
