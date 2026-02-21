@@ -1,8 +1,8 @@
-push 10 
-push 20
-add
-peek
-pop
-
-
-halt
+ADD
+PUSH 10 
+PUSH 20
+ADD
+PEEK
+POP
+HALT
+EOF

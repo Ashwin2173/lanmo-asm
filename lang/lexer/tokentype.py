@@ -11,3 +11,8 @@ class TokenType(Enum):
     NEWLINE = "NEWLINE"
 
     K_PUSH = "PUSH"
+    K_POP = "POP"
+    K_ADD = "ADD"
+    K_PEEK = "PEEK"
+    K_HALT = "HALT"
+    K_EOF = "EOF"

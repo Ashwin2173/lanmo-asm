@@ -1,3 +1,10 @@
+from lang.lexer.word import Word
+
 class LanmoError(Exception):
     def __init__(self, *args):
         super().__init__(*args)
+
+class LanmoSyntaxError(Exception):
+    def __init__(self, token: Word, message: str):
+        super().__init__(message)
+        self.token = token
