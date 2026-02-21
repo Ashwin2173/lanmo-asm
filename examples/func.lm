@@ -4,3 +4,10 @@ main {
     ADD
     RET
 }
+
+print {
+    PUSH "Hello, World"
+    PEEK
+    POP
+    RET
+}

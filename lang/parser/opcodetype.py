@@ -6,3 +6,4 @@ class OpCodeType(Enum):
     ADD = 3
     PEEK = 4
     HALT = 5
+    RET = 6

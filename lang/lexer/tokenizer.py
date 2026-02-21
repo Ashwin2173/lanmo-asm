@@ -16,4 +16,5 @@ def tokenize(program) -> list[Word]:
             tokens.append(Word(raw, token_type, line, token_span))
         else:
             line += 1
+    tokens.append(Word('EOF', TokenType.K_EOF, line, ()))
     return tokens

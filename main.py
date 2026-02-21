@@ -33,10 +33,10 @@ def main(args: list[str]) -> None:
             compiler = Compiler(tokens)
             byte_code_file.write(compiler.compile())
         except LanmoSyntaxError as e:
-            print(f"file: {path}")
+            print(f"In file: {path}")
             if e.token is not None:
                 print(get_error_token_format(e, program))
-            print(f"[ERROR] {e}")
+            print(f"SyntaxError: {e}")
 
 if __name__ == "__main__":
     main(sys.argv)
