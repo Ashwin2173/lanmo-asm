@@ -61,6 +61,7 @@ class Compiler:
         function += struct.pack("<I", len(function_code))
         function += function_code
         self.function_table += struct.pack("<I", len(function))
+        self.function_table = function
     
     def __parse_push(self, token: Word, execution_code: bytearray) -> None:
         value: Word = next(self.tokens)
