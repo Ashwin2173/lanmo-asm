@@ -24,6 +24,8 @@ class Compiler:
         self.constant_table = bytearray()
         self.function_table = bytearray()
         self.constant_lookup = dict()
+        self.function_lookup = set()
+        self.function_count = 0
 
     def compile(self) -> bytearray:
         try:
@@ -39,6 +41,10 @@ class Compiler:
         return self.__pack_byte_code()
 
     def __parse_function(self, token: Word) -> None:
+        if token.get_raw() in self.function_lookup:
+            raise LanmoSyntaxError(token, "function re-defined")
+        self.function_count += 1
+        self.function_lookup.add(token.get_raw())
         name_index = self.__add_constant(token)
         function_code = bytearray()
         max_stack_size = 255
@@ -60,7 +66,6 @@ class Compiler:
         function += struct.pack("<I", max_stack_size)
         function += struct.pack("<I", len(function_code))
         function += function_code
-        self.function_table += struct.pack("<I", len(function))
         self.function_table += function
     
     def __parse_push(self, token: Word, execution_code: bytearray) -> None:
@@ -70,10 +75,10 @@ class Compiler:
 
     def __add_constant(self, token: Word) -> int:
         raw_value = token.get_raw()
-        index = self.constant_lookup.get(raw_value, len(self.constant_table))
-        if index == len(self.constant_table):
+        if raw_value not in self.constant_lookup:
+            self.constant_lookup[raw_value] = len(self.constant_lookup)
             if token.get_type() == TokenType.INTEGER:
-                self.constant_table += struct.pack("<Bi", DataType.INTEGER.value, int(raw_value))
+                self.constant_table += struct.pack("<BIi", DataType.INTEGER.value, 4, int(raw_value))
             elif token.get_type() == TokenType.IDENTIFIER:
                 word = token.get_raw()
                 self.constant_table += struct.pack("<B", DataType.STRING.value)
@@ -84,14 +89,16 @@ class Compiler:
                 self.constant_table += struct.pack(f"<I{len(string_value)}s", len(string_value), string_value.encode('utf-8'))
             else:
                 raise LanmoSyntaxError(token, f"Expected CONSTANT; got {token.get_type().value}")
-        return index
+        return self.constant_lookup.get(raw_value)
 
     def __pack_byte_code(self) -> bytearray:
+        if (len(self.constant_lookup) >= 65534):
+            raise LanmoSyntaxError(None, "the file contains to many symbols")
         final_byte_code = bytearray()
         final_byte_code += get_header()
-        final_byte_code += struct.pack("<I", len(self.constant_table))
+        final_byte_code += struct.pack("<H", len(self.constant_lookup))
         final_byte_code += self.constant_table
-        final_byte_code += struct.pack("<I", len(self.function_table))
+        final_byte_code += struct.pack("<I", self.function_count)
         final_byte_code += self.function_table
         return final_byte_code
 
