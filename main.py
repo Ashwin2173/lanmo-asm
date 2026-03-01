@@ -1,7 +1,7 @@
 import sys
 
 from lang.parser.constants import Constants
-from lang.asm.asmbler import Asmbler
+from lang.asm.assembler import Assembler
 from lang.dis.disasm import Disasm
 
 program_args = set()
@@ -10,8 +10,14 @@ def read_program_file(args: list[str]) -> tuple[str, str]:
     ret_value = None, None
     for arg in args:
         if arg.endswith(".lm"):
+            if ret_value[0] is not None:
+                print("[Error] Passed multiple files")
+                exit(1)
             ret_value = open(arg, 'r').read(), arg
         elif arg.endswith(".lmc"):
+            if ret_value[0] is not None:
+                print("[Error] Passed multiple files")
+                exit(1)
             ret_value = open(arg, 'rb').read(), arg
         elif arg.startswith("--"):
             program_args.add(arg)
@@ -36,14 +42,14 @@ def main(args: list[str]) -> None:
             print("[ERROR] Required .lmc file for disasmbling")
             sys.exit(1)
         disasmbler = Disasm(program, path)
-        disasmbler.disasmble()
+        disasmbler.disassemble()
         sys.exit(0)
     else:
         if not path.endswith("lm"):
             print("[ERROR] Required .lm file for compiling")
             exit(1)
-        asmbler = Asmbler(program, path)
-        asmbler.asmble()
+        asmbler = Assembler(program, path)
+        asmbler.assemble()
         sys.exit(0)
 
 if __name__ == "__main__":

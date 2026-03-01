@@ -2,12 +2,12 @@ from lang.lexer.tokenizer import tokenize
 from lang.parser.compiler import Compiler
 from exceptions import LanmoSyntaxError
 
-class Asmbler:
+class Assembler:
     def __init__(self, program, path):
         self.program = program
         self.path = path
 
-    def asmble(self) -> None:
+    def assemble(self) -> None:
         tokens = tokenize(self.program)
         byte_code_file = f"{self.path[:-3]}.lmc"
         with open(byte_code_file, 'wb') as byte_code_file:

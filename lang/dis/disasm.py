@@ -18,15 +18,17 @@ class Disasm:
         self.program = program
         self.constants_table = list()
         self.pointer = 0
-        self.fp = open(f"{path[:-len('.lmc')]}.dis.lm", 'w')
+        self.save_path = f"{path[:-len('.lmc')]}.dis.lm"
+        self.fp = open(self.save_path, 'w')
 
-    def disasmble(self) -> None:
+    def disassemble(self) -> None:
         header = self.__read_bytes(Constants.HEADER_FORMAT, 8)
         if header[1] != Constants.MAJOR_VERSION or header[2] != Constants.MINOR_VERSION:
             raise LanmoDisAsmError(f"mismatching version for disasmbing; supported version: {Constants.MAJOR_VERSION}.{Constants.MINOR_VERSION}")
         self.fp.write(f"// LANMO v{header[1]}.{header[2]}")
         self.__load_constants_table()
         self.__disasmble_functions()
+        print(f"[INFO] Saved {self.save_path}")
         self.fp.close()
 
     def __disasmble_functions(self) -> None:

@@ -104,7 +104,7 @@ class Compiler:
 
     def __pack_byte_code(self) -> bytearray:
         if (len(self.constant_lookup) >= 65534):
-            raise LanmoSyntaxError(None, "the file contains to many symbols")
+            raise LanmoSyntaxError(None, "the file contains too many symbols")
         final_byte_code = bytearray()
         final_byte_code += get_header()
         final_byte_code += struct.pack(Constants.CONSTANT_LOOKUP_COUNT_SIZE_FORMAT, len(self.constant_lookup))

@@ -2,7 +2,7 @@ import re
 
 from lang.lexer.word import Word
 from lang.lexer.tokentype import TokenType
-from lang.lexer.grammer import TOKEN_GRAMMER
+from lang.lexer.grammar import TOKEN_GRAMMER
 
 def tokenize(program) -> list[Word]:
     line = 1
