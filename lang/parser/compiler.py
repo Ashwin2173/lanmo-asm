@@ -98,7 +98,7 @@ class Compiler:
         final_byte_code += get_header()
         final_byte_code += struct.pack("<H", len(self.constant_lookup))
         final_byte_code += self.constant_table
-        final_byte_code += struct.pack("<I", self.function_count)
+        final_byte_code += struct.pack("<H", self.function_count)
         final_byte_code += self.function_table
         return final_byte_code
 
