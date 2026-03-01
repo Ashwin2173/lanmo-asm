@@ -1,5 +1,6 @@
 import sys
 
+from lang.parser.constants import Constants
 from lang.asm.asmbler import Asmbler
 from lang.dis.disasm import Disasm
 
@@ -19,7 +20,8 @@ def read_program_file(args: list[str]) -> tuple[str, str]:
 def main(args: list[str]) -> None:
     program, path = read_program_file(args)
     if "--version" in program_args:
-        print("LANMO 1.0 written in python")
+        version = f"{Constants.MAJOR_VERSION}.{Constants.MINOR_VERSION}"
+        print(f"LANMO v{version}; Written in python")
         sys.exit(0)
     elif program is None or "--help" in program_args:
         print("USAGE:")
@@ -33,8 +35,8 @@ def main(args: list[str]) -> None:
         if not path.endswith("lmc"):
             print("[ERROR] Required .lmc file for disasmbling")
             sys.exit(1)
-        disasmbler = Disasm(program)
-        print(disasmbler.disasmble())
+        disasmbler = Disasm(program, path)
+        disasmbler.disasmble()
         sys.exit(0)
     else:
         if not path.endswith("lm"):

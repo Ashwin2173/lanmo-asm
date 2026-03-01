@@ -4,11 +4,8 @@ from lang.lexer.word import Word
 from lang.lexer.tokentype import TokenType
 from lang.parser.opcodetype import OpCodeType
 from lang.parser.datatype import DataType
+from lang.parser.constants import Constants
 from exceptions import LanmoSyntaxError
-
-MAGIC = 2273
-MAJOR_VERSION = 1
-MINOR_VERSION = 0
 
 SINGLE_OPCODES = {
     TokenType.K_ADD,
@@ -47,46 +44,51 @@ class Compiler:
         self.function_lookup.add(token.get_raw())
         name_index = self.__add_constant(token)
         function_code = bytearray()
+        op_code_count = 0
         max_stack_size = 255
+        args_count = next(self.tokens)
+        expect_token(args_count, TokenType.INTEGER)
         expect_token(next(self.tokens), TokenType.OPEN_BRACE)
         for token in self.tokens:
             token_type = token.get_type()
             if token_type == TokenType.CLOSE_BRACE: 
                 break
             elif token_type == TokenType.K_PUSH:
+                op_code_count += 1
                 self.__parse_push(token, function_code)
             elif token_type in SINGLE_OPCODES:
-                function_code += struct.pack("<B", get_opcode(token))
+                op_code_count += 1
+                function_code += struct.pack(Constants.OP_CODE_SIZE_FORMAT, get_opcode(token), 0)
             else:
                 raise LanmoSyntaxError(token, "Unknown token or Unhandled opCode")
         function = bytearray()
-        function += struct.pack("<I", name_index)
-        function += struct.pack("<I", 0)     # args count
-        function += struct.pack("<I", 0)     # local count 
-        function += struct.pack("<I", max_stack_size)
-        function += struct.pack("<I", len(function_code))
+        function += struct.pack(Constants.FUNCTION_NAME_SIZE_FORMAT, name_index)
+        function += struct.pack(Constants.FUNCTION_ARG_COUNT_FORMAT, int(args_count.get_raw()))
+        function += struct.pack(Constants.FUNCTION_LOCAL_COUNT_FORMAT, 0)     # local count 
+        function += struct.pack(Constants.FUNCTION_STACK_SIZE_FORMAT, max_stack_size)
+        function += struct.pack(Constants.FUNCTION_CODE_LEN_FORMAT, op_code_count)
         function += function_code
         self.function_table += function
     
     def __parse_push(self, token: Word, execution_code: bytearray) -> None:
         value: Word = next(self.tokens)
         index = self.__add_constant(value)
-        execution_code += struct.pack("<BH", get_opcode(token), index)
+        execution_code += struct.pack(Constants.OP_CODE_SIZE_FORMAT, get_opcode(token), index)
 
     def __add_constant(self, token: Word) -> int:
         raw_value = token.get_raw()
         if raw_value not in self.constant_lookup:
             self.constant_lookup[raw_value] = len(self.constant_lookup)
             if token.get_type() == TokenType.INTEGER:
-                self.constant_table += struct.pack("<BIi", DataType.INTEGER.value, 4, int(raw_value))
+                self.constant_table += struct.pack(Constants.INT_FORMAT, DataType.INTEGER.value, Constants.INT_SIZE, int(raw_value))
             elif token.get_type() == TokenType.IDENTIFIER:
                 word = token.get_raw()
-                self.constant_table += struct.pack("<B", DataType.STRING.value)
-                self.constant_table += struct.pack(f"<I{len(word)}s", len(word), word.encode('utf-8'))
+                self.constant_table += struct.pack(Constants.STRING_FORMAT, DataType.STRING.value)
+                self.constant_table += struct.pack(Constants.STRING_LEN_FORMAT(word), len(word), word.encode('utf-8'))
             elif token.get_type() == TokenType.STRING:
                 string_value = token.get_raw()[1:-1]
-                self.constant_table += struct.pack("<B", DataType.STRING.value)
-                self.constant_table += struct.pack(f"<I{len(string_value)}s", len(string_value), string_value.encode('utf-8'))
+                self.constant_table += struct.pack(Constants.STRING_FORMAT, DataType.STRING.value)
+                self.constant_table += struct.pack(Constants.STRING_LEN_FORMAT(string_value), len(string_value), string_value.encode('utf-8'))
             else:
                 raise LanmoSyntaxError(token, f"Expected CONSTANT; got {token.get_type().value}")
         return self.constant_lookup.get(raw_value)
@@ -96,9 +98,9 @@ class Compiler:
             raise LanmoSyntaxError(None, "the file contains to many symbols")
         final_byte_code = bytearray()
         final_byte_code += get_header()
-        final_byte_code += struct.pack("<H", len(self.constant_lookup))
+        final_byte_code += struct.pack(Constants.CONSTANT_LOOKUP_COUNT_SIZE_FORMAT, len(self.constant_lookup))
         final_byte_code += self.constant_table
-        final_byte_code += struct.pack("<H", self.function_count)
+        final_byte_code += struct.pack(Constants.FUNCTION_LOOKUP_COUNT_SIZE_FORMAT, self.function_count)
         final_byte_code += self.function_table
         return final_byte_code
 
@@ -114,4 +116,4 @@ def tokens_iter(tokens: list[Word]):
         yield token
 
 def get_header() -> bytearray:
-    return struct.pack("<IHH", MAGIC, MAJOR_VERSION, MINOR_VERSION)
+    return struct.pack(Constants.HEADER_FORMAT, Constants.MAGIC, Constants.MAJOR_VERSION, Constants.MINOR_VERSION)

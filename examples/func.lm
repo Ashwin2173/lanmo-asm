@@ -1,11 +1,11 @@
-main {
+main 0 {
     PUSH 10
     PUSH 20
     ADD
     RET
 }
 
-print {
+print 0 {
     PUSH "Hello, World"
     PEEK
     POP
