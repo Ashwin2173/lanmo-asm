@@ -54,13 +54,14 @@ class Compiler:
             if token_type == TokenType.CLOSE_BRACE: 
                 break
             elif token_type == TokenType.K_PUSH:
-                op_code_count += 1
                 self.__parse_push(token, function_code)
+            elif token_type == TokenType.K_CALL:
+                self.__parse_call(token, function_code)
             elif token_type in SINGLE_OPCODES:
-                op_code_count += 1
                 function_code += struct.pack(Constants.OP_CODE_SIZE_FORMAT, get_opcode(token), 0)
             else:
                 raise LanmoSyntaxError(token, "Unknown token or Unhandled opCode")
+            op_code_count += 1
         function = bytearray()
         function += struct.pack(Constants.FUNCTION_NAME_SIZE_FORMAT, name_index)
         function += struct.pack(Constants.FUNCTION_ARG_COUNT_FORMAT, int(args_count.get_raw()))
@@ -69,6 +70,14 @@ class Compiler:
         function += struct.pack(Constants.FUNCTION_CODE_LEN_FORMAT, op_code_count)
         function += function_code
         self.function_table += function
+    
+    def __parse_call(self, token: Word, excution_code: bytearray) -> None:
+        value: Word = next(self.tokens)
+        expect_token(value, TokenType.INTEGER)
+        count = int(value.get_raw())
+        if count >= 256:
+            raise LanmoSyntaxError("call size should be <= 255")
+        excution_code += struct.pack(Constants.OP_CODE_SIZE_FORMAT, get_opcode(token), count)
     
     def __parse_push(self, token: Word, execution_code: bytearray) -> None:
         value: Word = next(self.tokens)
@@ -83,7 +92,7 @@ class Compiler:
                 self.constant_table += struct.pack(Constants.INT_FORMAT, DataType.INTEGER.value, Constants.INT_SIZE, int(raw_value))
             elif token.get_type() == TokenType.IDENTIFIER:
                 word = token.get_raw()
-                self.constant_table += struct.pack(Constants.STRING_FORMAT, DataType.STRING.value)
+                self.constant_table += struct.pack(Constants.STRING_FORMAT, DataType.IDENTIFIER.value)
                 self.constant_table += struct.pack(Constants.STRING_LEN_FORMAT(word), len(word), word.encode('utf-8'))
             elif token.get_type() == TokenType.STRING:
                 string_value = token.get_raw()[1:-1]
@@ -109,7 +118,7 @@ def get_opcode(token: Word) -> int:
 
 def expect_token(token: Word, token_type: TokenType) -> None:
     if token.get_type() != token_type:
-        raise LanmoSyntaxError(token, f"Expected {token_type}, but got {token.get_type().value}")
+        raise LanmoSyntaxError(token, f"Expected {token_type.name}, but got {token.get_type().value}")
 
 def tokens_iter(tokens: list[Word]):
     for token in tokens:

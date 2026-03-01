@@ -15,6 +15,7 @@ class TokenType(Enum):
     K_POP = "POP"
     K_ADD = "ADD"
     K_PEEK = "PEEK"
+    K_CALL = "CALL"
     K_HALT = "HALT"
     K_EOF = "EOF"
     K_RET = "RET"

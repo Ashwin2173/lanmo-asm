@@ -1,5 +1,6 @@
-from enum import Enum
+from enum import Enum, auto
 
 class DataType(Enum):
-    INTEGER = 1
-    STRING = 2
+    INTEGER = auto()
+    STRING = auto()
+    IDENTIFIER = auto()

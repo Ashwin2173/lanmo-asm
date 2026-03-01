@@ -1,9 +1,10 @@
-from enum import Enum 
+from enum import Enum, auto
 
 class OpCodeType(Enum):
-    PUSH = 1
-    POP = 2
-    ADD = 3
-    PEEK = 4
-    HALT = 5
-    RET = 6
+    PUSH = auto()
+    POP = auto()
+    ADD = auto()
+    PEEK = auto()
+    CALL = auto()
+    HALT = auto()
+    RET = auto()

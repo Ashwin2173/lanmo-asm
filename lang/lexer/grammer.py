@@ -4,6 +4,7 @@ TOKEN_GRAMMER = r"""
 | (?P<K_POP>POP)                                          # pop keyword
 | (?P<K_ADD>ADD)                                          # add keyword
 | (?P<K_PEEK>PEEK)                                        # peek keyword
+| (?P<K_CALL>CALL)                                        # call keyword
 | (?P<K_HALT>HALT)                                        # halt keyword
 | (?P<K_EOF>EOF)                                          # eof keyword
 | (?P<K_RET>RET)                                          # return keyword
