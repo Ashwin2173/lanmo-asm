@@ -1,84 +1,95 @@
-import struct
+from typing import TextIO
 
-from lang.parser.constants import Constants
 from lang.parser.datatype import DataType
 from lang.parser.opcodetype import OpCodeType
+from lang.dis.byte_dispenser import ByteDispenser
+
 from exceptions import LanmoDisAsmError
 
-OP_CHECK_CONSTANTS_TABLE = {
+MAGIC = 2273
+MAJOR_VERSION = 1
+MINOR_VERSION = 0
+
+OP_WITH_LOOKUP = {
     OpCodeType.PUSH
 }
-
-OP_KEY_VALUE = {
+OP_WITH_VALUE = {
     OpCodeType.CALL
 }
 
 class Disasm:
-    def __init__(self, program: bytearray, path: str):
-        self.program = program
-        self.constants_table = list()
-        self.pointer = 0
-        self.save_path = f"{path[:-len('.lmc')]}.dis.lm"
-        self.fp = open(self.save_path, 'w')
+    def __init__(self, program: bytes, fp: TextIO):
+        self.bd = ByteDispenser(program)
+        self.fp = fp
+        self.symbol_table   = list()
+        self.function_table = list()
+        self.__disassemble()
 
-    def disassemble(self) -> None:
-        header = self.__read_bytes(Constants.HEADER_FORMAT, 8)
-        if header[1] != Constants.MAJOR_VERSION or header[2] != Constants.MINOR_VERSION:
-            raise LanmoDisAsmError(f"mismatching version for disasmbing; supported version: {Constants.MAJOR_VERSION}.{Constants.MINOR_VERSION}")
-        self.fp.write(f"// LANMO v{header[1]}.{header[2]}")
-        self.__load_constants_table()
-        self.__disasmble_functions()
-        print(f"[INFO] Saved {self.save_path}")
-        self.fp.close()
+    def render(self) -> str:
+        self.fp.write(f"// LANMO v{MAJOR_VERSION}.{MINOR_VERSION}\n")
+        for function in self.function_table:
+            name       = function[0]
+            args_count = function[1]
+            op_codes   = function[2]
+            self.fp.write(f"\n{name} {args_count} {{")
+            for op_code in op_codes:
+                self.fp.write(f"\t{op_code}\n")
+            self.fp.write(f"}}\n")
 
-    def __disasmble_functions(self) -> None:
-        function_count = self.__read_bytes(Constants.FUNCTION_LOOKUP_COUNT_SIZE_FORMAT, 2)[0]
-        for _ in range(function_count):
-            name_index = self.__read_bytes(Constants.FUNCTION_NAME_SIZE_FORMAT, 2)[0]
-            name = self.constants_table[name_index]
-            print(f"[INFO] Disasmbling {name} function")
-            args_count = self.__read_bytes(Constants.FUNCTION_ARG_COUNT_FORMAT, 1)[0]
-            _ = self.__read_bytes(Constants.FUNCTION_LOCAL_COUNT_FORMAT, 4)[0]
-            _ = self.__read_bytes(Constants.FUNCTION_STACK_SIZE_FORMAT, 2)[0]
-            self.fp.write(f"\n\n{name} {args_count} {{\n")
-            self.__disasmble_op_codes()
-            self.fp.write("}")
-    
-    def __disasmble_op_codes(self) -> None:
-        op_code_count = self.__read_bytes(Constants.FUNCTION_CODE_LEN_FORMAT, 4)[0]
-        for _ in range(op_code_count):
-            op_code, value = self.__read_bytes(Constants.OP_CODE_SIZE_FORMAT, 3)
-            op_code = OpCodeType(op_code)
-            self.fp.write(f"    {op_code.name}")
-            if op_code in OP_CHECK_CONSTANTS_TABLE:
-                constant = str(self.constants_table[value])
-                self.fp.write(f" {constant}")
-            elif op_code in OP_KEY_VALUE:
-                self.fp.write(f" {value}")
-            self.fp.write("\n")
+    def __disassemble(self) -> None:
+        magic = self.bd.next_int(4)
+        major_version = self.bd.next_int(2)
+        minor_version = self.bd.next_int(2)
+        if magic != MAGIC:
+            raise LanmoDisAsmError("Wrong Magic")
+        if major_version != MAJOR_VERSION or minor_version != MINOR_VERSION:
+            raise LanmoDisAsmError(f"Version v{major_version}.{minor_version} is not supported")
+        self.__read_symbols()
+        self.__read_functions()
 
-    def __load_constants_table(self) -> None:
-        constants_count = self.__read_bytes(Constants.CONSTANT_LOOKUP_COUNT_SIZE_FORMAT, 2)
-        for _ in range(constants_count[0]):
-            data_type = self.__read_bytes(Constants.DATA_TYPE_FORMAT_TEMPLATE, 1)[0]
-            if data_type == DataType.INTEGER.value:
-                size = self.__read_bytes(f"<{Constants.INT_SIZE_FORMAT}", 4)[0]
-                number = self.__read_bytes(f"<{Constants.INT_VALUE_FORMAT}", size)[0]
-                self.constants_table.append(number)
-            elif data_type == DataType.STRING.value:
-                size = self.__read_bytes(f"<{Constants.STRING_SIZE_FORMAT}", 4)[0]
-                string = self.__read_bytes(f"<{size}s", size)[0]
-                self.constants_table.append(f'"{string.decode("utf-8")}"')
-            elif data_type == DataType.IDENTIFIER.value:
-                size = self.__read_bytes(f"<{Constants.STRING_SIZE_FORMAT}", 4)[0]
-                string = self.__read_bytes(f"<{size}s", size)[0]
-                self.constants_table.append(string.decode("utf-8"))
+    def __read_symbols(self) -> None:
+        symbols_count = self.bd.next_int(2)
+        for _ in range(symbols_count):
+            symbol_type = self.bd.next_int(1)
+            if symbol_type == DataType.INTEGER.value:
+                size = self.bd.next_int(4)
+                self.symbol_table.append(self.bd.next_int(size))
+            elif symbol_type == DataType.STRING.value:
+                size = self.bd.next_int(4)
+                final_string = stringify(self.bd.next_str(size))
+                self.symbol_table.append(final_string)
+            elif symbol_type == DataType.IDENTIFIER.value:
+                size = self.bd.next_int(4)
+                self.symbol_table.append(self.bd.next_str(size))
             else:
-                assert False, "Unhandled DataType: " + str(data_type)
-        print(f"[INFO] Unpacked {len(self.constants_table)} Constants")
+                assert False, f"Unhandled DataType: { str(symbol_type) }"
 
-    def __read_bytes(self, format: str, size: int) -> tuple:
-        start_point = self.pointer
-        self.pointer += size
-        data = struct.unpack(format, self.program[start_point:self.pointer])
-        return data
+    def __read_functions(self) -> None:
+        function_count = self.bd.next_int(2)
+        for _ in range(function_count):
+            name = self.symbol_table[self.bd.next_int(2)]
+            print(f"[INFO] Disasmbling { name } function")
+            args_count = self.bd.next_int(1)
+            _ = self.bd.next(4)     # will be used later
+            _ = self.bd.next(2)     # will be used later
+            raw_op_code = self.__read_op_codes()
+            self.function_table.append((name, args_count, raw_op_code))
+
+    def __read_op_codes(self) -> list[str]:
+        content = list()
+        op_code_count = self.bd.next_int(4)
+        for _ in range(op_code_count):
+            op_code = OpCodeType(self.bd.next_int(1))
+            data    = self.bd.next_int(2)
+            if op_code in OP_WITH_LOOKUP:
+                lookup_data = self.symbol_table[data]
+                content.append(f"{op_code.name} {lookup_data}")
+            elif op_code in OP_WITH_VALUE:
+                content.append(f"{op_code.name} {data}")
+            else:
+                content.append(f"{op_code.name}")
+        return content
+    
+def stringify(content: str) -> str:
+    return f'"{content}"'
+

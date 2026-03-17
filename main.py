@@ -41,8 +41,9 @@ def main(args: list[str]) -> None:
         if not path.endswith("lmc"):
             print("[ERROR] Required .lmc file for disasmbling")
             sys.exit(1)
-        disasmbler = Disasm(program, path)
-        disasmbler.disassemble()
+        with open(f"{path[:4]}.dis.lm", 'w') as new_file_path:
+            disasmbler = Disasm(program, new_file_path)
+            disasmbler.render()
         sys.exit(0)
     else:
         if not path.endswith("lm"):
