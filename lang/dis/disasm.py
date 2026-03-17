@@ -26,12 +26,12 @@ class Disasm:
         self.__disassemble()
 
     def render(self) -> str:
-        self.fp.write(f"// LANMO v{MAJOR_VERSION}.{MINOR_VERSION}\n")
+        self.fp.write(f"\\\\ LANMO v{MAJOR_VERSION}.{MINOR_VERSION}\n")
         for function in self.function_table:
             name       = function[0]
             args_count = function[1]
             op_codes   = function[2]
-            self.fp.write(f"\n{name} {args_count} {{")
+            self.fp.write(f"\n{name} {args_count} {{\n")
             for op_code in op_codes:
                 self.fp.write(f"\t{op_code}\n")
             self.fp.write(f"}}\n")
