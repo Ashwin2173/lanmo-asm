@@ -3,6 +3,7 @@ from enum import Enum
 class TokenType(Enum):
     COMMENT = "COMMENT"
     IDENTIFIER = "IDENTIFIER"
+    FUNCTION = "FUNCTION"
     FLOAT = "FLOAT"
     INTEGER = "INTEGER"
     STRING = "STRING"

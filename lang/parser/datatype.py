@@ -4,3 +4,4 @@ class DataType(Enum):
     INTEGER = auto()
     STRING = auto()
     IDENTIFIER = auto()
+    FUNCTION = auto()
