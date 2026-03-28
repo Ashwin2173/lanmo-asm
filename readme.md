@@ -7,6 +7,11 @@ LANMO VM ASM implementation
 python main.py
 ```
 
+### Build (Windows)
+```console
+./build.bat
+```
+
 ### bytecode format
 ```
 LANMO BC:
@@ -25,7 +30,6 @@ CONSTANT:
 
 FUNCTION:
   NAME_INDEX  = 2B
-  ARGS_COUNT  = 1B
   LOCAL_COUNT = 1B
   STACK_SIZE  = 2B
   CODE_COUNT  = 4B
