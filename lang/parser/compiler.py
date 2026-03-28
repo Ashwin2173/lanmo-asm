@@ -30,7 +30,7 @@ class Compiler:
     def __first_pass(self, tokens: list[Word]) -> None:
         tokens_count = len(tokens)
         definitions = {
-            (TokenType.IDENTIFIER, TokenType.INTEGER, TokenType.OPEN_BRACE): self.fp_function_name
+            (TokenType.IDENTIFIER, TokenType.OPEN_BRACE): self.fp_function_name
         }
         for index in range(len(tokens)):
             for pattern, sets in definitions.items():
