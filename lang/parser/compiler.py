@@ -24,6 +24,21 @@ class Compiler:
         self.function_lookup = set()
         self.function_count = 0
 
+        self.fp_function_name = set()
+        self.__first_pass(tokens)
+
+    def __first_pass(self, tokens: list[Word]) -> None:
+        tokens_count = len(tokens)
+        definitions = {
+            (TokenType.IDENTIFIER, TokenType.INTEGER, TokenType.OPEN_BRACE): self.fp_function_name
+        }
+        for index in range(len(tokens)):
+            for pattern, sets in definitions.items():
+                if index + len(pattern) > tokens_count: 
+                    continue
+                if all(tokens[index + offset].get_type() == pattern[offset] for offset in range(len(pattern))):
+                    sets.add(tokens[index].get_raw())
+        
     def compile(self) -> bytearray:
         try:
             for token in self.tokens:
@@ -92,7 +107,10 @@ class Compiler:
                 self.constant_table += struct.pack("<BIi", DataType.INTEGER.value, 4, int(raw_value))
             elif token_type == TokenType.IDENTIFIER:
                 word = token.get_raw()
-                self.constant_table += struct.pack("<B", DataType.IDENTIFIER.value)
+                data_type = DataType.IDENTIFIER
+                if word in self.fp_function_name:
+                    data_type = DataType.FUNCTION
+                self.constant_table += struct.pack("<B", data_type.value)
                 self.constant_table += struct.pack(Constants.STRING_LEN_FORMAT(word), len(word), word.encode('utf-8'))
             elif token_type == TokenType.STRING:
                 string_value = token.get_raw()[1:-1]

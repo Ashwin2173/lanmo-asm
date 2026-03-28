@@ -10,7 +10,7 @@ class Word:
     def get_raw(self) -> str:
         return self.w_raw
     
-    def get_type(self) -> str:
+    def get_type(self) -> TokenType:
         return self.w_type
 
     def get_line(self) -> int:
