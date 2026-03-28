@@ -59,8 +59,6 @@ class Compiler:
         function_code = bytearray()
         op_code_count = 0
         max_stack_size = 255
-        args_count = next(self.tokens)
-        expect_token(args_count, TokenType.INTEGER)
         expect_token(next(self.tokens), TokenType.OPEN_BRACE)
         for token in self.tokens:
             token_type = token.get_type()
@@ -77,7 +75,6 @@ class Compiler:
             op_code_count += 1
         function = bytearray()
         function += struct.pack("<H", name_index)
-        function += struct.pack("<B", int(args_count.get_raw()))
         function += struct.pack("<I", 0)     # local count 
         function += struct.pack("<H", max_stack_size)
         function += struct.pack("<I", op_code_count)

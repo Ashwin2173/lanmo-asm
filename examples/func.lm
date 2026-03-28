@@ -1,20 +1,21 @@
-main 0 {
+main {
     PUSH 10
     PUSH 20
     ADD
     PUSH print_hello
+    PUSH ashwin
     CALL 0
     RET
 }
 
-print_hello 0 {
+print_hello {
     PUSH "Hello, World"
     PUSH print
     CALL 1
     RET
 }
 
-print 1 {
+print {
     PEEK
     POP
     RET

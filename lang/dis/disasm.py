@@ -26,9 +26,8 @@ class Disasm:
         self.fp.write(f"// LANMO v{Constants.MAJOR_VERSION}.{Constants.MINOR_VERSION}\n")
         for function in self.function_table:
             name       = function[0]
-            args_count = function[1]
-            op_codes   = function[2]
-            self.fp.write(f"\n{name} {args_count} {{\n")
+            op_codes   = function[1]
+            self.fp.write(f"\n{name} {{\n")
             for op_code in op_codes:
                 self.fp.write(f"\t{op_code}\n")
             self.fp.write(f"}}\n")
@@ -69,11 +68,10 @@ class Disasm:
         for _ in range(function_count):
             name = self.symbol_table[self.bd.next_int(2)]
             print(f"[INFO] Disasmbling { name } function")
-            args_count = self.bd.next_int(1)
             _ = self.bd.next(4)     # will be used later
             _ = self.bd.next(2)     # will be used later
             raw_op_code = self.__read_op_codes()
-            self.function_table.append((name, args_count, raw_op_code))
+            self.function_table.append((name, raw_op_code))
 
     def __read_op_codes(self) -> list[str]:
         content = list()
