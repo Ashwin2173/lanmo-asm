@@ -34,6 +34,11 @@ class Compiler:
                 if current_function_name is None:
                     raise LanmoSyntaxError(tokens[index], "Label defined out a frame scope")
                 self.fp_function_name[current_function_name][tokens[index + 1].get_raw()] = current_function_ip
+            elif (index + 1 < tokens_count and
+                  (tokens[index].get_type() == TokenType.K_NATIVE and tokens[index + 1].get_type() == TokenType.IDENTIFIER)):
+                if current_function_name is not None:
+                    raise LanmoSyntaxError(tokens[index], "Native definition inside a frame scope")
+                self.fp_function_name[tokens[index + 1].get_raw()] = dict()
             elif tokens[index].get_type() in Constants.OP_CODE_KEYWORDS:
                 current_function_ip += 1
 
@@ -44,11 +49,17 @@ class Compiler:
                     break
                 elif token.get_type() == TokenType.IDENTIFIER:
                     self.__parse_function(token)
+                elif token.get_type() == TokenType.K_NATIVE:
+                    self.__handle_native(token)
                 else:
                     raise LanmoSyntaxError(token, "Unknown token out of function")
         except StopIteration:
             raise LanmoSyntaxError(None, "Missing <EOF>")
         return self.__pack_byte_code()
+
+    def __handle_native(self, token: Word) -> None:
+        expect_token(token, TokenType.K_NATIVE)
+        expect_token(next(self.tokens), TokenType.IDENTIFIER)
 
     def __parse_function(self, func_name: Word) -> None:
         self.function_count += 1

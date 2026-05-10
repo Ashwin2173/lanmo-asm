@@ -15,6 +15,7 @@ TOKEN_GRAMMER = r"""
 | (?P<K_STORE>STORE)                                      # store keyword
 | (?P<K_LOAD>LOAD)                                        # load keyword
 | (?P<K_NONE>NONE)                                        # none keyword
+| (?P<K_NATIVE>NATIVE)                                    # native keyword
 | (?P<K_TRUE>TRUE)                                        # true keyword
 | (?P<K_FALSE>FALSE)                                      # false keyword
 | (?P<OPEN_BRACE>\{)                                      # open brace operator

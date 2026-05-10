@@ -1,0 +1,10 @@
+NATIVE print
+
+main {
+    PUSH print
+    PUSH "Hello, World"
+    CALL 1
+    POP
+    PUSH 0
+    RETURN
+}
