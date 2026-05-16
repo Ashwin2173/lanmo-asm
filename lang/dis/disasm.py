@@ -17,7 +17,9 @@ OP_WITH_VALUE = {
     OpCodeType.BIN_OP,
     OpCodeType.STORE,
     OpCodeType.LOAD,
-    OpCodeType.MAKE_LIST
+    OpCodeType.MAKE_LIST,
+    OpCodeType.GET_INDEX,
+    OpCodeType.SET_INDEX
 }
 
 class Disasm:
