@@ -14,6 +14,7 @@ TOKEN_GRAMMER = r"""
 | (?P<K_RETURN>RETURN)                                    # return keyword
 | (?P<K_STORE>STORE)                                      # store keyword
 | (?P<K_LOAD>LOAD)                                        # load keyword
+| (?P<K_MAKE_LIST>MAKE_LIST)                              # make list keyword
 | (?P<K_NONE>NONE)                                        # none keyword
 | (?P<K_NATIVE>NATIVE)                                    # native keyword
 | (?P<K_TRUE>TRUE)                                        # true keyword

@@ -27,5 +27,6 @@ class Constants:
         TokenType.K_DUP,
         TokenType.K_JUMP_IF_FALSE,
         TokenType.K_STORE,
-        TokenType.K_LOAD
+        TokenType.K_LOAD,
+        TokenType.K_MAKE_LIST
     }

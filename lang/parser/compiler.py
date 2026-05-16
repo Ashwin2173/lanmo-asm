@@ -89,6 +89,8 @@ class Compiler:
                 self.__parse_store(token, local_dict, function_code)
             elif token_type == TokenType.K_LOAD:
                 self.__parse_load(token, local_dict, function_code)
+            elif token_type == TokenType.K_MAKE_LIST:
+                self.__parse_make_list(token, function_code)
             elif token_type in Constants.SINGLE_OPCODES:
                 function_code += struct.pack("<BH", get_opcode(token), 0)
             else:
@@ -101,6 +103,11 @@ class Compiler:
         function += struct.pack("<I", op_code_count)
         function += function_code
         self.function_table += function
+
+    def __parse_make_list(self, token: Word, execution_code: bytearray) -> None:
+        list_len: Word = next(self.tokens)
+        expect_token(list_len, TokenType.INTEGER)
+        execution_code += struct.pack("<BH", get_opcode(token), int(list_len.get_raw()))
 
     def __parse_load(self, token: Word, local_dict: dict[str, int], execution_code: bytearray) -> None:
         label: Word = next(self.tokens)

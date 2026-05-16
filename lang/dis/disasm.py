@@ -16,7 +16,8 @@ OP_WITH_VALUE = {
     OpCodeType.JUMP_IF_FALSE,
     OpCodeType.BIN_OP,
     OpCodeType.STORE,
-    OpCodeType.LOAD
+    OpCodeType.LOAD,
+    OpCodeType.MAKE_LIST
 }
 
 class Disasm:

@@ -30,3 +30,4 @@ class TokenType(Enum):
     K_DUP = "DUP"
     K_JUMP_IF_FALSE = "JUMP_IF_FALSE"
     K_NATIVE = "NATIVE"
+    K_MAKE_LIST = "MAKE_LIST"
