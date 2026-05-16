@@ -17,6 +17,7 @@ TOKEN_GRAMMER = r"""
 | (?P<K_MAKE_LIST>MAKE_LIST)                              # make list keyword
 | (?P<K_GET_INDEX>GET_INDEX)                              # get index keyword
 | (?P<K_SET_INDEX>SET_INDEX)                              # set index keyword
+| (?P<K_UNARY_OP>UNARY_OP)                                # unary keyword
 | (?P<K_NONE>NONE)                                        # none keyword
 | (?P<K_NATIVE>NATIVE)                                    # native keyword
 | (?P<K_TRUE>TRUE)                                        # true keyword

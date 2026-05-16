@@ -16,3 +16,4 @@ class OpCodeType(Enum):
     MAKE_LIST     = auto()
     GET_INDEX     = auto()
     SET_INDEX     = auto()
+    UNARY_OP      = auto()

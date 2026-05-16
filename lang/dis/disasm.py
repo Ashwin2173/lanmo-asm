@@ -15,6 +15,7 @@ OP_WITH_VALUE = {
     OpCodeType.JUMP,
     OpCodeType.JUMP_IF_FALSE,
     OpCodeType.BIN_OP,
+    OpCodeType.UNARY_OP,
     OpCodeType.STORE,
     OpCodeType.LOAD,
     OpCodeType.MAKE_LIST,
