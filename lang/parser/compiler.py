@@ -91,6 +91,10 @@ class Compiler:
                 self.__parse_load(token, local_dict, function_code)
             elif token_type == TokenType.K_MAKE_LIST:
                 self.__parse_make_list(token, function_code)
+            elif token_type == TokenType.K_GET_INDEX:
+                self.__parse_get_index(token, function_code)
+            elif token_type == TokenType.K_SET_INDEX:
+                self.__parse_set_index(token, function_code)
             elif token_type in Constants.SINGLE_OPCODES:
                 function_code += struct.pack("<BH", get_opcode(token), 0)
             else:
@@ -103,6 +107,16 @@ class Compiler:
         function += struct.pack("<I", op_code_count)
         function += function_code
         self.function_table += function
+
+    def __parse_set_index(self, token: Word, execution_code: bytearray) -> None:
+        index: Word = next(self.tokens)
+        expect_token(index, TokenType.INTEGER)
+        execution_code += struct.pack("<BH", get_opcode(token), int(index.get_raw()))
+
+    def __parse_get_index(self, token: Word, execution_code: bytearray) -> None:
+        index: Word = next(self.tokens)
+        expect_token(index, TokenType.INTEGER)
+        execution_code += struct.pack("<BH", get_opcode(token), int(index.get_raw()))
 
     def __parse_make_list(self, token: Word, execution_code: bytearray) -> None:
         list_len: Word = next(self.tokens)

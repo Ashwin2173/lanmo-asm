@@ -14,3 +14,5 @@ class OpCodeType(Enum):
     STORE         = auto()
     LOAD          = auto()
     MAKE_LIST     = auto()
+    GET_INDEX     = auto()
+    SET_INDEX     = auto()

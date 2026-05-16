@@ -29,7 +29,7 @@ class Disasm:
         self.__disassemble()
 
     def render(self) -> str:
-        self.fp.write(f"// LANMO v{Constants.MAJOR_VERSION}.{Constants.MINOR_VERSION}\n")
+        self.fp.write(f"// LANMO v{Constants.MAJOR_VERSION}.{Constants.MINOR_VERSION}\n; note: this disassembled file can't be executed")
         for function in self.function_table:
             name       = function[0]
             op_codes   = function[1]
