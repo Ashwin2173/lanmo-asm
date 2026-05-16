@@ -93,10 +93,6 @@ class Compiler:
                 self.__parse_load(token, local_dict, function_code)
             elif token_type == TokenType.K_MAKE_LIST:
                 self.__parse_make_list(token, function_code)
-            elif token_type == TokenType.K_GET_INDEX:
-                self.__parse_get_index(token, function_code)
-            elif token_type == TokenType.K_SET_INDEX:
-                self.__parse_set_index(token, function_code)
             elif token_type in Constants.SINGLE_OPCODES:
                 function_code += struct.pack("<BH", get_opcode(token), 0)
             else:

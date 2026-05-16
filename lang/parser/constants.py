@@ -12,7 +12,9 @@ class Constants:
         TokenType.K_POP,
         TokenType.K_DUP,
         TokenType.K_HALT,
-        TokenType.K_RETURN
+        TokenType.K_RETURN,
+        TokenType.K_GET_INDEX,
+        TokenType.K_SET_INDEX
     }
 
     OP_CODE_KEYWORDS = {
