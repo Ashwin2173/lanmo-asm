@@ -80,6 +80,8 @@ class Compiler:
                 self.__parse_call(token, function_code)
             elif token_type == TokenType.K_BIN_OP:
                 self.__parse_bin_op(token, function_code)
+            elif token_type == TokenType.K_UNARY_OP:
+                self.__parse_unary_op(token, function_code)
             elif token_type == TokenType.K_JUMP or token_type == TokenType.K_JUMP_IF_FALSE:
                 self.__parse_jump(token, func_name, function_code)
             elif token_type == TokenType.K_LABEL:
@@ -89,6 +91,8 @@ class Compiler:
                 self.__parse_store(token, local_dict, function_code)
             elif token_type == TokenType.K_LOAD:
                 self.__parse_load(token, local_dict, function_code)
+            elif token_type == TokenType.K_MAKE_LIST:
+                self.__parse_make_list(token, function_code)
             elif token_type in Constants.SINGLE_OPCODES:
                 function_code += struct.pack("<BH", get_opcode(token), 0)
             else:
@@ -101,6 +105,26 @@ class Compiler:
         function += struct.pack("<I", op_code_count)
         function += function_code
         self.function_table += function
+
+    def __parse_unary_op(self, token: Word, execution_code: bytearray) -> None:
+        value: Word = next(self.tokens)
+        expect_token(value, TokenType.INTEGER)
+        execution_code += struct.pack("<BH", get_opcode(token), int(value.get_raw()))
+
+    def __parse_set_index(self, token: Word, execution_code: bytearray) -> None:
+        index: Word = next(self.tokens)
+        expect_token(index, TokenType.INTEGER)
+        execution_code += struct.pack("<BH", get_opcode(token), int(index.get_raw()))
+
+    def __parse_get_index(self, token: Word, execution_code: bytearray) -> None:
+        index: Word = next(self.tokens)
+        expect_token(index, TokenType.INTEGER)
+        execution_code += struct.pack("<BH", get_opcode(token), int(index.get_raw()))
+
+    def __parse_make_list(self, token: Word, execution_code: bytearray) -> None:
+        list_len: Word = next(self.tokens)
+        expect_token(list_len, TokenType.INTEGER)
+        execution_code += struct.pack("<BH", get_opcode(token), int(list_len.get_raw()))
 
     def __parse_load(self, token: Word, local_dict: dict[str, int], execution_code: bytearray) -> None:
         label: Word = next(self.tokens)

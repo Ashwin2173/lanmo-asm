@@ -15,8 +15,12 @@ OP_WITH_VALUE = {
     OpCodeType.JUMP,
     OpCodeType.JUMP_IF_FALSE,
     OpCodeType.BIN_OP,
+    OpCodeType.UNARY_OP,
     OpCodeType.STORE,
-    OpCodeType.LOAD
+    OpCodeType.LOAD,
+    OpCodeType.MAKE_LIST,
+    OpCodeType.GET_INDEX,
+    OpCodeType.SET_INDEX
 }
 
 class Disasm:
@@ -28,7 +32,7 @@ class Disasm:
         self.__disassemble()
 
     def render(self) -> str:
-        self.fp.write(f"// LANMO v{Constants.MAJOR_VERSION}.{Constants.MINOR_VERSION}\n")
+        self.fp.write(f"// LANMO v{Constants.MAJOR_VERSION}.{Constants.MINOR_VERSION}; note: this disassembled file can't be executed\n")
         for function in self.function_table:
             name       = function[0]
             op_codes   = function[1]

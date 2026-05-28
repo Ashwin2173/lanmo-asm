@@ -13,3 +13,7 @@ class OpCodeType(Enum):
     DUP           = auto()
     STORE         = auto()
     LOAD          = auto()
+    MAKE_LIST     = auto()
+    GET_INDEX     = auto()
+    SET_INDEX     = auto()
+    UNARY_OP      = auto()
