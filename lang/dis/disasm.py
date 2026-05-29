@@ -69,12 +69,11 @@ class Disasm:
             elif symbol_type == DataType.FUNCTION.value:
                 size = self.bd.next_int(4)
                 self.symbol_table.append(self.bd.next_str(size))
+            elif symbol_type == DataType.NONE.value:
+                self.symbol_table.append("NONE")
             elif symbol_type == DataType.BOOLEAN.value:
                 size = self.bd.next_int(1)
                 self.symbol_table.append("TRUE" if self.bd.next_int(size) else "FALSE")
-            elif symbol_type == DataType.NONE.value:
-                self.bd.next_int(1)
-                self.symbol_table.append("NONE")
             else:
                 assert False, f"Unhandled DataType: { str(symbol_type) }"
 
