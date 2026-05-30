@@ -24,8 +24,8 @@ class Compiler:
         current_function_name = None
         current_function_ip = 0
         for index in range(len(tokens)):
-            if (index + 1 < tokens_count and
-                (tokens[index].get_type() == TokenType.IDENTIFIER and tokens[index + 1].get_type() == TokenType.OPEN_BRACE)):
+            if (index + 2 < tokens_count and (tokens[index].get_type() == TokenType.IDENTIFIER and
+                 tokens[index + 1].get_type() == TokenType.INTEGER and tokens[index + 2].get_type() == TokenType.OPEN_BRACE)):
                 current_function_name = tokens[index].get_raw()
                 current_function_ip = 0
                 self.fp_function_name[current_function_name] = dict()
@@ -69,6 +69,9 @@ class Compiler:
         op_code_count = 0
         max_stack_size = 255
         local_dict: [str, int] = dict()
+        args_count_token = next(self.tokens)
+        expect_token(args_count_token, TokenType.INTEGER)
+        args_count = int(args_count_token.get_raw())
         expect_token(next(self.tokens), TokenType.OPEN_BRACE)
         for token in self.tokens:
             token_type = token.get_type()
@@ -100,6 +103,7 @@ class Compiler:
             op_code_count += 1
         function = bytearray()
         function += struct.pack("<H", name_index)
+        function += struct.pack("<B", args_count)
         function += struct.pack("<I", len(local_dict))     # local count
         function += struct.pack("<H", max_stack_size)
         function += struct.pack("<I", op_code_count)
