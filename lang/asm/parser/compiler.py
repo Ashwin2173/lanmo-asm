@@ -108,6 +108,10 @@ class Compiler:
                 self.__parse_new_obj(token, function_code)
             elif token_type == TokenType.K_UNARY_OP:
                 self.__parse_unary_op(token, function_code)
+            elif token_type == TokenType.K_GET_INDEX or token_type == TokenType.K_SET_INDEX:
+                self.__parse_get_set_index(token, function_code)
+            elif token_type == TokenType.K_GET_FIELD or token_type == TokenType.K_SET_FIELD:
+                self.__parse_get_set_field(token, function_code)
             elif token_type == TokenType.K_JUMP or token_type == TokenType.K_JUMP_IF_FALSE:
                 self.__parse_jump(token, func_name, function_code)
             elif token_type == TokenType.K_LABEL:
@@ -138,15 +142,16 @@ class Compiler:
         expect_token(value, TokenType.INTEGER)
         execution_code += struct.pack("<BH", get_opcode(token), int(value.get_raw()))
 
-    def __parse_set_index(self, token: Word, execution_code: bytearray) -> None:
+    def __parse_get_set_index(self, token: Word, execution_code: bytearray) -> None:
         index: Word = next(self.tokens)
         expect_token(index, TokenType.INTEGER)
         execution_code += struct.pack("<BH", get_opcode(token), int(index.get_raw()))
 
-    def __parse_get_index(self, token: Word, execution_code: bytearray) -> None:
+    def __parse_get_set_field(self, token: Word, execution_code: bytearray) -> None:
         index: Word = next(self.tokens)
-        expect_token(index, TokenType.INTEGER)
-        execution_code += struct.pack("<BH", get_opcode(token), int(index.get_raw()))
+        expect_token(index, TokenType.IDENTIFIER)
+        symbol_index = self.__add_constant(index, TokenType.IDENTIFIER)
+        execution_code += struct.pack("<BH", get_opcode(token), symbol_index)
 
     def __parse_make_list(self, token: Word, execution_code: bytearray) -> None:
         list_len: Word = next(self.tokens)

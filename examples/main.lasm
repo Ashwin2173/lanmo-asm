@@ -3,8 +3,15 @@ NATIVE print
 STRUCT { x y }
 
 main 0 {
-    PUSH print
     NEW_OBJ 0
+    PUSH 1
+    SET_FIELD x
+    PUSH 2
+    SET_FIELD y
+    STORE obj
+    PUSH print
+    LOAD obj
+    GET_FIELD x
     CALL 1
     PUSH NONE RETURN
 }

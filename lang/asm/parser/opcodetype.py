@@ -18,3 +18,5 @@ class OpCodeType(Enum):
     SET_INDEX     = auto()
     UNARY_OP      = auto()
     NEW_OBJ       = auto()
+    GET_FIELD     = auto()
+    SET_FIELD     = auto()
