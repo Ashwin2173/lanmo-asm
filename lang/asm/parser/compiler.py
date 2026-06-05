@@ -1,10 +1,10 @@
 import struct
 
-from lang.lexer.word import Word
-from lang.lexer.tokentype import TokenType
-from lang.parser.opcodetype import OpCodeType
-from lang.parser.datatype import DataType
-from lang.parser.constants import Constants
+from lang.asm.lexer.word import Word
+from lang.asm.lexer.tokentype import TokenType
+from lang.asm.parser.opcodetype import OpCodeType
+from lang.asm.parser.datatype import DataType
+from lang.asm.parser.constants import Constants
 from exceptions import LanmoSyntaxError
 
 class Compiler:

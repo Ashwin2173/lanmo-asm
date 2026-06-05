@@ -1,7 +1,7 @@
 import sys
 
-from lang.parser.constants import Constants
-from lang.asm.assembler import Assembler
+from lang.asm.parser.constants import Constants
+from lang.asm.asm import Assembler
 from lang.dis.disasm import Disasm
 
 program_args = set()

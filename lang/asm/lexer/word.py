@@ -1,4 +1,4 @@
-from lang.lexer.tokentype import TokenType
+from lang.asm.lexer.tokentype import TokenType
 
 class Word:
     def __init__(self, w_raw: str, w_type: TokenType, w_line: int, w_span: tuple[int, int]):

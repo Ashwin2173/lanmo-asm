@@ -6,9 +6,9 @@
 """
 import struct
 
-from lang.parser.constants import Constants
-from lang.parser.datatype import DataType
-from lang.parser.opcodetype import OpCodeType
+from lang.asm.parser.constants import Constants
+from lang.asm.parser.datatype import DataType
+from lang.asm.parser.opcodetype import OpCodeType
 from exceptions import LanmoDisAsmError
 
 OP_CHECK_CONSTANTS_TABLE = {
