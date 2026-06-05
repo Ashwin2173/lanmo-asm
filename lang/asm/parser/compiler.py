@@ -11,9 +11,11 @@ class Compiler:
     def __init__(self, tokens: list[Word]):
         self.tokens = tokens_iter(tokens)
         self.constant_table = bytearray()
+        self.struct_table = bytearray()
         self.function_table = bytearray()
         self.constant_lookup = dict()
         self.function_lookup = set()
+        self.struct_count = 0
         self.function_count = 0
 
         self.fp_function_name: [str, dict[str, int]] = dict()
@@ -51,11 +53,30 @@ class Compiler:
                     self.__parse_function(token)
                 elif token.get_type() == TokenType.K_NATIVE:
                     self.__handle_native(token)
+                elif token.get_type() == TokenType.K_STRUCT:
+                    self.__handle_struct(token)
                 else:
                     raise LanmoSyntaxError(token, "Unknown token out of function")
         except StopIteration:
             raise LanmoSyntaxError(None, "Missing <EOF>")
         return self.__pack_byte_code()
+
+    def __handle_struct(self, token: Word) -> None:
+        expect_token(token, TokenType.K_STRUCT)
+        self.struct_count += 1
+        expect_token(next(self.tokens), TokenType.OPEN_BRACE)
+        members = list()
+        while True:
+            t = next(self.tokens)
+            if t.get_type() == TokenType.CLOSE_BRACE:
+                break
+            elif t.get_type() == TokenType.IDENTIFIER:
+                members.append(self.__add_constant(t, TokenType.IDENTIFIER))
+            else:
+                expect_token(t, TokenType.IDENTIFIER)
+        self.struct_table += struct.pack("<B", len(members))
+        for member in members:
+            self.struct_table += struct.pack("<H", member)
 
     def __handle_native(self, token: Word) -> None:
         expect_token(token, TokenType.K_NATIVE)
@@ -210,6 +231,8 @@ class Compiler:
         final_byte_code += get_header()
         final_byte_code += struct.pack("<H", len(self.constant_lookup))
         final_byte_code += self.constant_table
+        final_byte_code += struct.pack("<H", self.struct_count)
+        final_byte_code += self.struct_table
         final_byte_code += struct.pack("<H", self.function_count)
         final_byte_code += self.function_table
         return final_byte_code

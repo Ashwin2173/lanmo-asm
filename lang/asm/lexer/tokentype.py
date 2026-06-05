@@ -34,3 +34,4 @@ class TokenType(Enum):
     K_GET_INDEX = "GET_INDEX"
     K_SET_INDEX = "SET_INDEX"
     K_UNARY_OP = "UNARY_OP"
+    K_STRUCT = "STRUCT"

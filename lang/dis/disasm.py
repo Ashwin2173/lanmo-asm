@@ -28,11 +28,17 @@ class Disasm:
         self.bd = ByteDispenser(program)
         self.fp = fp
         self.symbol_table   = list()
+        self.struct_table   = list()
         self.function_table = list()
         self.__disassemble()
 
-    def render(self) -> str:
-        self.fp.write(f"// LANMO v{Constants.MAJOR_VERSION}.{Constants.MINOR_VERSION}; note: this disassembled file can't be executed\n")
+    def render(self) -> None:
+        self.fp.write(f"// LANMO v{Constants.MAJOR_VERSION}.{Constants.MINOR_VERSION}; note: this disassembled file can't be executed\n\n")
+        for struct_members in self.struct_table:
+            self.fp.write("STRUCT {\n")
+            for member in struct_members:
+                self.fp.write(f"\t{member}\n")
+            self.fp.write("}\n")
         for function in self.function_table:
             name       = function[0]
             args_count = function[1]
@@ -51,6 +57,7 @@ class Disasm:
         if major_version != Constants.MAJOR_VERSION or minor_version != Constants.MINOR_VERSION:
             raise LanmoDisAsmError(f"Version v{major_version}.{minor_version} is not supported")
         self.__read_symbols()
+        self.__read_struct()
         self.__read_functions()
 
     def __read_symbols(self) -> None:
@@ -77,6 +84,18 @@ class Disasm:
                 self.symbol_table.append("TRUE" if self.bd.next_int(size) else "FALSE")
             else:
                 assert False, f"Unhandled DataType: { str(symbol_type) }"
+
+    def __read_struct(self) -> None:
+        struct_count = self.bd.next_int(2)
+        for _ in range(struct_count):
+            member_count = self.bd.next_int(1)
+            raw_member   = list()
+            for _ in range(member_count):
+                member_index = self.bd.next_int(2)
+                raw_member.append(self.symbol_table[member_index])
+            self.struct_table.append(raw_member)
+        if struct_count > 0:
+            print(f"[INFO] Disasmbled {struct_count} structs")
 
     def __read_functions(self) -> None:
         function_count = self.bd.next_int(2)

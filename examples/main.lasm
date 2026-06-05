@@ -1,5 +1,9 @@
 NATIVE print
 
+STRUCT {
+    x y
+}
+
 main 0 {
     PUSH hello
     CALL 0
