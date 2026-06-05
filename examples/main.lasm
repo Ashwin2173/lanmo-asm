@@ -1,21 +1,10 @@
 NATIVE print
 
-STRUCT {
-    x y
-}
+STRUCT { x y }
 
 main 0 {
-    PUSH hello
-    CALL 0
-    POP
-    PUSH NONE RETURN
-}
-
-hello 1 {
-    STORE count
     PUSH print
-    LOAD count
+    NEW_OBJ 0
     CALL 1
-    POP
     PUSH NONE RETURN
 }

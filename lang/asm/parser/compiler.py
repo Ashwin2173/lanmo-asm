@@ -104,6 +104,8 @@ class Compiler:
                 self.__parse_call(token, function_code)
             elif token_type == TokenType.K_BIN_OP:
                 self.__parse_bin_op(token, function_code)
+            elif token_type == TokenType.K_NEW_OBJ:
+                self.__parse_new_obj(token, function_code)
             elif token_type == TokenType.K_UNARY_OP:
                 self.__parse_unary_op(token, function_code)
             elif token_type == TokenType.K_JUMP or token_type == TokenType.K_JUMP_IF_FALSE:
@@ -180,6 +182,14 @@ class Compiler:
         if count >= 256:
             raise LanmoSyntaxError(token, "call size should be <= 255")
         execution_code += struct.pack("<BH", get_opcode(token), count)
+
+    def __parse_new_obj(self, token: Word, execution_code: bytearray) -> None:
+        struct_id = next(self.tokens)
+        raw_struct_id = int(struct_id.get_raw())
+        expect_token(struct_id, TokenType.INTEGER)
+        if raw_struct_id < 0 or raw_struct_id >= len(self.struct_table):
+            raise LanmoSyntaxError(struct_id, "Invalid struct id")
+        execution_code += struct.pack("<BH", get_opcode(token), raw_struct_id)
 
     def __parse_bin_op(self, token: Word, execution_code: bytearray) -> None:
         value: Word = next(self.tokens)
