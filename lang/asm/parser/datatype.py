@@ -7,3 +7,4 @@ class DataType(Enum):
     FUNCTION = auto()
     NONE = auto()
     BOOLEAN = auto()
+    FLOAT = auto()

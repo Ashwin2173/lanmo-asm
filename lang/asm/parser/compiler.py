@@ -220,6 +220,8 @@ class Compiler:
                 self.constant_table += struct.pack("<BB", DataType.BOOLEAN.value, 0)
             elif token_type == TokenType.INTEGER:
                 self.constant_table += struct.pack("<BIi", DataType.INTEGER.value, 4, int(raw_value))
+            elif token_type == TokenType.FLOAT:
+                self.constant_table += struct.pack("<BId", DataType.FLOAT.value, 8, float(raw_value))
             elif token_type == TokenType.IDENTIFIER:
                 word = token.get_raw()
                 data_type = DataType.IDENTIFIER

@@ -1,3 +1,5 @@
+import struct
+
 
 class ByteDispenser:
     def __init__(self, bytecode: bytes):
@@ -6,6 +8,9 @@ class ByteDispenser:
 
     def next_int(self, size: int) -> int:
          return int.from_bytes(self.next(size), byteorder='little')
+
+    def next_float(self, size: int) -> float:
+        return struct.unpack("<d", self.next(size))[0]
 
     def next_str(self, size: int) -> str:
         return self.next(size).decode("utf-8")
