@@ -1,4 +1,4 @@
-from lang.lexer.tokentype import TokenType
+from lang.asm.lexer.tokentype import TokenType
 
 class Constants:
     MAGIC = 2273

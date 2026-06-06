@@ -1,8 +1,8 @@
 import re
 
-from lang.lexer.word import Word
-from lang.lexer.tokentype import TokenType
-from lang.lexer.grammar import TOKEN_GRAMMER
+from lang.asm.lexer.word import Word
+from lang.asm.lexer.tokentype import TokenType
+from lang.asm.lexer.grammar import TOKEN_GRAMMER
 
 def tokenize(program) -> list[Word]:
     line = 1

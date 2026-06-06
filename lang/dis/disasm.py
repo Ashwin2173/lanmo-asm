@@ -1,8 +1,8 @@
 from typing import TextIO
 
-from lang.parser.constants import Constants
-from lang.parser.datatype import DataType
-from lang.parser.opcodetype import OpCodeType
+from lang.asm.parser.constants import Constants
+from lang.asm.parser.datatype import DataType
+from lang.asm.parser.opcodetype import OpCodeType
 from lang.dis.byte_dispenser import ByteDispenser
 
 from exceptions import LanmoDisAsmError
@@ -28,15 +28,22 @@ class Disasm:
         self.bd = ByteDispenser(program)
         self.fp = fp
         self.symbol_table   = list()
+        self.struct_table   = list()
         self.function_table = list()
         self.__disassemble()
 
-    def render(self) -> str:
-        self.fp.write(f"// LANMO v{Constants.MAJOR_VERSION}.{Constants.MINOR_VERSION}; note: this disassembled file can't be executed\n")
+    def render(self) -> None:
+        self.fp.write(f"// LANMO v{Constants.MAJOR_VERSION}.{Constants.MINOR_VERSION}; note: this disassembled file can't be executed\n\n")
+        for struct_members in self.struct_table:
+            self.fp.write("STRUCT {\n")
+            for member in struct_members:
+                self.fp.write(f"\t{member}\n")
+            self.fp.write("}\n")
         for function in self.function_table:
             name       = function[0]
-            op_codes   = function[1]
-            self.fp.write(f"\n{name} {{\n")
+            args_count = function[1]
+            op_codes   = function[2]
+            self.fp.write(f"\n{name} {args_count} {{\n")
             for op_code in op_codes:
                 self.fp.write(f"\t{op_code}\n")
             self.fp.write(f"}}\n")
@@ -50,6 +57,7 @@ class Disasm:
         if major_version != Constants.MAJOR_VERSION or minor_version != Constants.MINOR_VERSION:
             raise LanmoDisAsmError(f"Version v{major_version}.{minor_version} is not supported")
         self.__read_symbols()
+        self.__read_struct()
         self.__read_functions()
 
     def __read_symbols(self) -> None:
@@ -77,15 +85,28 @@ class Disasm:
             else:
                 assert False, f"Unhandled DataType: { str(symbol_type) }"
 
+    def __read_struct(self) -> None:
+        struct_count = self.bd.next_int(2)
+        for _ in range(struct_count):
+            member_count = self.bd.next_int(1)
+            raw_member   = list()
+            for _ in range(member_count):
+                member_index = self.bd.next_int(2)
+                raw_member.append(self.symbol_table[member_index])
+            self.struct_table.append(raw_member)
+        if struct_count > 0:
+            print(f"[INFO] Disasmbled {struct_count} structs")
+
     def __read_functions(self) -> None:
         function_count = self.bd.next_int(2)
         for _ in range(function_count):
             name = self.symbol_table[self.bd.next_int(2)]
             print(f"[INFO] Disasmbling { name } function")
+            args_count = self.bd.next_int(1)
             _ = self.bd.next(4)     # will be used later
             _ = self.bd.next(2)     # will be used later
             raw_op_code = self.__read_op_codes()
-            self.function_table.append((name, raw_op_code))
+            self.function_table.append((name, args_count, raw_op_code))
 
     def __read_op_codes(self) -> list[str]:
         content = list()

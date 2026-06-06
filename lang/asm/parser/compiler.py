@@ -1,19 +1,21 @@
 import struct
 
-from lang.lexer.word import Word
-from lang.lexer.tokentype import TokenType
-from lang.parser.opcodetype import OpCodeType
-from lang.parser.datatype import DataType
-from lang.parser.constants import Constants
+from lang.asm.lexer.word import Word
+from lang.asm.lexer.tokentype import TokenType
+from lang.asm.parser.opcodetype import OpCodeType
+from lang.asm.parser.datatype import DataType
+from lang.asm.parser.constants import Constants
 from exceptions import LanmoSyntaxError
 
 class Compiler:
     def __init__(self, tokens: list[Word]):
         self.tokens = tokens_iter(tokens)
         self.constant_table = bytearray()
+        self.struct_table = bytearray()
         self.function_table = bytearray()
         self.constant_lookup = dict()
         self.function_lookup = set()
+        self.struct_count = 0
         self.function_count = 0
 
         self.fp_function_name: [str, dict[str, int]] = dict()
@@ -24,8 +26,8 @@ class Compiler:
         current_function_name = None
         current_function_ip = 0
         for index in range(len(tokens)):
-            if (index + 1 < tokens_count and
-                (tokens[index].get_type() == TokenType.IDENTIFIER and tokens[index + 1].get_type() == TokenType.OPEN_BRACE)):
+            if (index + 2 < tokens_count and (tokens[index].get_type() == TokenType.IDENTIFIER and
+                 tokens[index + 1].get_type() == TokenType.INTEGER and tokens[index + 2].get_type() == TokenType.OPEN_BRACE)):
                 current_function_name = tokens[index].get_raw()
                 current_function_ip = 0
                 self.fp_function_name[current_function_name] = dict()
@@ -51,11 +53,30 @@ class Compiler:
                     self.__parse_function(token)
                 elif token.get_type() == TokenType.K_NATIVE:
                     self.__handle_native(token)
+                elif token.get_type() == TokenType.K_STRUCT:
+                    self.__handle_struct(token)
                 else:
                     raise LanmoSyntaxError(token, "Unknown token out of function")
         except StopIteration:
             raise LanmoSyntaxError(None, "Missing <EOF>")
         return self.__pack_byte_code()
+
+    def __handle_struct(self, token: Word) -> None:
+        expect_token(token, TokenType.K_STRUCT)
+        self.struct_count += 1
+        expect_token(next(self.tokens), TokenType.OPEN_BRACE)
+        members = list()
+        while True:
+            t = next(self.tokens)
+            if t.get_type() == TokenType.CLOSE_BRACE:
+                break
+            elif t.get_type() == TokenType.IDENTIFIER:
+                members.append(self.__add_constant(t, TokenType.IDENTIFIER))
+            else:
+                expect_token(t, TokenType.IDENTIFIER)
+        self.struct_table += struct.pack("<B", len(members))
+        for member in members:
+            self.struct_table += struct.pack("<H", member)
 
     def __handle_native(self, token: Word) -> None:
         expect_token(token, TokenType.K_NATIVE)
@@ -69,6 +90,9 @@ class Compiler:
         op_code_count = 0
         max_stack_size = 255
         local_dict: [str, int] = dict()
+        args_count_token = next(self.tokens)
+        expect_token(args_count_token, TokenType.INTEGER)
+        args_count = int(args_count_token.get_raw())
         expect_token(next(self.tokens), TokenType.OPEN_BRACE)
         for token in self.tokens:
             token_type = token.get_type()
@@ -80,8 +104,14 @@ class Compiler:
                 self.__parse_call(token, function_code)
             elif token_type == TokenType.K_BIN_OP:
                 self.__parse_bin_op(token, function_code)
+            elif token_type == TokenType.K_NEW_OBJ:
+                self.__parse_new_obj(token, function_code)
             elif token_type == TokenType.K_UNARY_OP:
                 self.__parse_unary_op(token, function_code)
+            elif token_type == TokenType.K_GET_INDEX or token_type == TokenType.K_SET_INDEX:
+                self.__parse_get_set_index(token, function_code)
+            elif token_type == TokenType.K_GET_FIELD or token_type == TokenType.K_SET_FIELD:
+                self.__parse_get_set_field(token, function_code)
             elif token_type == TokenType.K_JUMP or token_type == TokenType.K_JUMP_IF_FALSE:
                 self.__parse_jump(token, func_name, function_code)
             elif token_type == TokenType.K_LABEL:
@@ -100,6 +130,7 @@ class Compiler:
             op_code_count += 1
         function = bytearray()
         function += struct.pack("<H", name_index)
+        function += struct.pack("<B", args_count)
         function += struct.pack("<I", len(local_dict))     # local count
         function += struct.pack("<H", max_stack_size)
         function += struct.pack("<I", op_code_count)
@@ -111,15 +142,16 @@ class Compiler:
         expect_token(value, TokenType.INTEGER)
         execution_code += struct.pack("<BH", get_opcode(token), int(value.get_raw()))
 
-    def __parse_set_index(self, token: Word, execution_code: bytearray) -> None:
+    def __parse_get_set_index(self, token: Word, execution_code: bytearray) -> None:
         index: Word = next(self.tokens)
         expect_token(index, TokenType.INTEGER)
         execution_code += struct.pack("<BH", get_opcode(token), int(index.get_raw()))
 
-    def __parse_get_index(self, token: Word, execution_code: bytearray) -> None:
+    def __parse_get_set_field(self, token: Word, execution_code: bytearray) -> None:
         index: Word = next(self.tokens)
-        expect_token(index, TokenType.INTEGER)
-        execution_code += struct.pack("<BH", get_opcode(token), int(index.get_raw()))
+        expect_token(index, TokenType.IDENTIFIER)
+        symbol_index = self.__add_constant(index, TokenType.IDENTIFIER)
+        execution_code += struct.pack("<BH", get_opcode(token), symbol_index)
 
     def __parse_make_list(self, token: Word, execution_code: bytearray) -> None:
         list_len: Word = next(self.tokens)
@@ -155,6 +187,14 @@ class Compiler:
         if count >= 256:
             raise LanmoSyntaxError(token, "call size should be <= 255")
         execution_code += struct.pack("<BH", get_opcode(token), count)
+
+    def __parse_new_obj(self, token: Word, execution_code: bytearray) -> None:
+        struct_id = next(self.tokens)
+        raw_struct_id = int(struct_id.get_raw())
+        expect_token(struct_id, TokenType.INTEGER)
+        if raw_struct_id < 0 or raw_struct_id >= len(self.struct_table):
+            raise LanmoSyntaxError(struct_id, "Invalid struct id")
+        execution_code += struct.pack("<BH", get_opcode(token), raw_struct_id)
 
     def __parse_bin_op(self, token: Word, execution_code: bytearray) -> None:
         value: Word = next(self.tokens)
@@ -206,6 +246,8 @@ class Compiler:
         final_byte_code += get_header()
         final_byte_code += struct.pack("<H", len(self.constant_lookup))
         final_byte_code += self.constant_table
+        final_byte_code += struct.pack("<H", self.struct_count)
+        final_byte_code += self.struct_table
         final_byte_code += struct.pack("<H", self.function_count)
         final_byte_code += self.function_table
         return final_byte_code

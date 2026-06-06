@@ -1,14 +1,21 @@
-// LANMO v1.0
-; note: this disassembled file can't be executed
+// LANMO v1.0; note: this disassembled file can't be executed
+
 main {
-	PUSH 3
-	PUSH 2
 	PUSH 1
+	PUSH 2
+	PUSH 3
 	MAKE_LIST 3
+	STORE 0
+	LOAD 0
+	PUSH 1
+	GET_INDEX 0
+	LOAD 0
+	PUSH 100
+	PUSH 1
+	SET_INDEX 0
 	STORE 0
 	PUSH print
 	LOAD 0
-	GET_INDEX 1
 	CALL 1
 	PUSH 0
 	RETURN

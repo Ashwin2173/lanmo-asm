@@ -1,5 +1,5 @@
-from lang.lexer.tokenizer import tokenize
-from lang.parser.compiler import Compiler
+from lang.asm.lexer.tokenizer import tokenize
+from lang.asm.parser.compiler import Compiler
 from exceptions import LanmoSyntaxError
 
 class Assembler:

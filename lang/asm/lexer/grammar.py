@@ -8,6 +8,8 @@ TOKEN_GRAMMER = r"""
 | (?P<K_HALT>HALT)                                        # halt keyword
 | (?P<K_EOF>EOF)                                          # eof keyword
 | (?P<K_LABEL>LABEL)                                      # label keyword
+| (?P<K_STRUCT>STRUCT)                                    # struct keyword
+| (?P<K_NEW_OBJ>NEW_OBJ)                                  # new obj keyword
 | (?P<K_DUP>DUP)                                          # dup keyword
 | (?P<K_JUMP_IF_FALSE>JUMP_IF_FALSE)                      # jump if false keyword
 | (?P<K_JUMP>JUMP)                                        # jump keyword
@@ -17,6 +19,8 @@ TOKEN_GRAMMER = r"""
 | (?P<K_MAKE_LIST>MAKE_LIST)                              # make list keyword
 | (?P<K_GET_INDEX>GET_INDEX)                              # get index keyword
 | (?P<K_SET_INDEX>SET_INDEX)                              # set index keyword
+| (?P<K_GET_FIELD>GET_FIELD)                              # get field keyword
+| (?P<K_SET_FIELD>SET_FIELD)                              # set field keyword
 | (?P<K_UNARY_OP>UNARY_OP)                                # unary keyword
 | (?P<K_NONE>NONE)                                        # none keyword
 | (?P<K_NATIVE>NATIVE)                                    # native keyword

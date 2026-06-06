@@ -1,4 +1,4 @@
-from lang.lexer.word import Word
+from lang.asm.lexer.word import Word
 
 class LanmoError(Exception):
     def __init__(self, *args):
