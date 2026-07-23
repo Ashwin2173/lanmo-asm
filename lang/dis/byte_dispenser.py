@@ -10,7 +10,13 @@ class ByteDispenser:
          return int.from_bytes(self.next(size), byteorder='little')
 
     def next_float(self, size: int) -> float:
-        return struct.unpack("<d", self.next(size))[0]
+        if size == 4:
+            fmt = "<f"
+        elif size == 8:
+            fmt = "<d"
+        else:
+            raise ValueError("Float size must be 4 or 8 bytes.")
+        return struct.unpack(fmt, self.next(size))[0]
 
     def next_str(self, size: int) -> str:
         return self.next(size).decode("utf-8")
