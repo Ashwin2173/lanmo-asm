@@ -74,7 +74,7 @@ class Disasm:
             elif symbol_type == DataType.IDENTIFIER.value:
                 size = self.bd.next_int(4)
                 self.symbol_table.append(self.bd.next_str(size))
-            elif symbol_type == DataType.FUNCTION.value:
+            elif symbol_type == DataType.FUNCTION.value or symbol_type == DataType.BUILT_IN_FUNCTION.value:
                 size = self.bd.next_int(4)
                 self.symbol_table.append(self.bd.next_str(size))
             elif symbol_type == DataType.NONE.value:
